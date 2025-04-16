@@ -1,34 +1,14 @@
 <!DOCTYPE html>
-<html lang="pl">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mój Dźwiękowy Sztos - Pygame na GitHub Pages</title>
-    <script src="https://pygamejs.org/dist/pygame.js"></script>
-    <script>
-        window.onload = function() {
-            // Twój kod w JavaScript tutaj, na przykład:
-            var screen = pygame.display.set_mode([600, 400]);
-            pygame.display.set_caption('Mój Dźwiękowy Sztos');
-
-            var running = true;
-            var clock = pygame.time.Clock();
-
-            while (running) {
-                for (var event of pygame.event.get()) {
-                    if (event.type == pygame.QUIT) {
-                        running = false;
-                    }
-                }
-                // Aktualizowanie okna gry
-                screen.fill([255, 255, 255]); // Wypełnij ekran białym kolorem
-                pygame.display.update();
-                clock.tick(60);  // 60 klatek na sekundę
-            }
-        };
-    </script>
+    <title>Moja Gra</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.0/dist/phaser.js"></script>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Mój Dźwiękowy Sztos - Pygame na GitHub Pages</h1>
-    <p>Strona uruchamia grę w przeglądarce!</p>
+    <h1>Moja Gra Phaser.js</h1>
+    <script src="game.js"></script>
 </body>
+</html>
