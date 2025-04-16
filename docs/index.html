@@ -60,8 +60,8 @@
 
             tekstStart = this.add.text(100, 180, "Kliknij, by zacząć", { fontSize: '32px', fill: '#000' });
 
-            // Ustawiamy tekst w lewym górnym rogu
-            tekstOdtworzenia = this.add.text(250, 10, `Pozostałe odtworzenia: ${pozostaleOdtworzenia}`, { fontSize: '24px', fill: '#000' });
+            // Ustawiamy tekst w lewym górnym rogu z dalszym przesunięciem w lewo
+            tekstOdtworzenia = this.add.text(10, 10, `Pozostałe odtworzenia: ${pozostaleOdtworzenia}`, { fontSize: '24px', fill: '#000' });
 
             this.input.once('pointerdown', () => {
                 tekstStart.setVisible(false);
