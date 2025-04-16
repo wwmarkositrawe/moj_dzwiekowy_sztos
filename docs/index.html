@@ -28,9 +28,8 @@
         let tekstStart;
         let tekstRestart;
         let konfetti = [];
-        let czasPozostaly = 60; // 60 sekund
-        let tekstCzasu;
-        let czasInterwal;
+        let pozostaleOdtworzenia = 0; // Liczba pozostałych odtworzeń nagrania 1
+        let tekstOdtworzenia;
 
         const config = {
             type: Phaser.AUTO,
@@ -61,7 +60,7 @@
 
             tekstStart = this.add.text(100, 180, "Kliknij, by zacząć", { fontSize: '32px', fill: '#000' });
 
-            tekstCzasu = this.add.text(500, 10, `Czas: ${czasPozostaly}s`, { fontSize: '24px', fill: '#000' });
+            tekstOdtworzenia = this.add.text(500, 10, `Pozostałe odtworzenia: ${pozostaleOdtworzenia}`, { fontSize: '24px', fill: '#000' });
 
             this.input.once('pointerdown', () => {
                 tekstStart.setVisible(false);
@@ -70,36 +69,24 @@
         }
 
         function startGame() {
-            czasPozostaly = 60;  // Resetujemy czas na początek gry
-            czasInterwal = this.time.addEvent({
-                delay: 1000, // co 1 sekundę
-                callback: updateCzas,
-                callbackScope: this,
-                loop: true
-            });
+            const powt = Phaser.Math.Between(1, 5); // Losujemy, ile razy ma zostać odtworzone nagranie1
+            pozostaleOdtworzenia = powt;  // Ustawiamy liczbę pozostałych odtworzeń
+            tekstOdtworzenia.setText(`Pozostałe odtworzenia: ${pozostaleOdtworzenia}`);
 
-            const powt = Phaser.Math.Between(1, 5);
             const odtworz = (n) => {
                 if (n > 0) {
                     dzwiek1.play();
-                    dzwiek1.once('complete', () => odtworz(n - 1));
+                    dzwiek1.once('complete', () => {
+                        pozostaleOdtworzenia--;
+                        tekstOdtworzenia.setText(`Pozostałe odtworzenia: ${pozostaleOdtworzenia}`);
+                        odtworz(n - 1);
+                    });
                 } else {
                     dzwiek2.play();
                     dzwiek2.once('complete', () => pokazKonfetti.call(this));
                 }
             };
             odtworz(powt);
-        }
-
-        function updateCzas() {
-            if (czasPozostaly > 0) {
-                czasPozostaly--;
-                tekstCzasu.setText(`Czas: ${czasPozostaly}s`);
-            } else {
-                czasInterwal.remove(); // Usuwamy interwał, gdy czas się skończy
-                tekstCzasu.setText("Czas minął!");
-                pokazKonfetti(); // Możesz dodać efekt konfetti, gdy czas się skończy
-            }
         }
 
         function pokazKonfetti() {
