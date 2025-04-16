@@ -1,113 +1,125 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8" />
-  <title>Gra z menu i konfetti</title>
-  <style>
-    body { margin: 0; background: #000; overflow: hidden; }
-    canvas { display: block; margin: 0 auto; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gra z Phaser</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.0/dist/phaser.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+        canvas {
+            border: 2px solid black;
+        }
+    </style>
 </head>
 <body>
-  <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.0/dist/phaser.js"></script>
-  <script>
-    class MenuScene extends Phaser.Scene {
-      constructor() {
-        super({ key: 'MenuScene' });
-      }
+    <script>
+        let cursors;
+        let grafika;
+        let dzwiek1, dzwiek2;
+        let tekstStart;
+        let tekstRestart;
+        let konfetti = [];
+        let czasPozostaly = 60; // 60 sekund
+        let tekstCzasu;
+        let czasInterwal;
 
-      preload() {
-        this.load.audio('startSound', 'nagranie1.mp3');
-        this.load.image('tlo', 'grafika.jpg');
-      }
-
-      create() {
-        this.add.image(400, 300, 'tlo').setDisplaySize(800, 600);
-
-        const startButton = this.add.text(400, 300, 'Start', { fontSize: '32px', fill: '#fff' })
-          .setOrigin(0.5)
-          .setInteractive();
-
-        startButton.on('pointerdown', () => {
-          this.sound.play('startSound');
-          this.scene.start('GameScene');
-        });
-      }
-    }
-
-    class GameScene extends Phaser.Scene {
-      constructor() {
-        super({ key: 'GameScene' });
-      }
-
-      preload() {
-        this.load.audio('endSound', 'nagranie2.mp3');
-        this.load.image('tlo', 'grafika.jpg');
-      }
-
-      create() {
-        this.add.image(400, 300, 'tlo').setDisplaySize(800, 600);
-
-        this.countdown = 10;
-        this.timerText = this.add.text(400, 50, `Czas: ${this.countdown}`, { fontSize: '32px', fill: '#fff' }).setOrigin(0.5);
-
-        this.timeEvent = this.time.addEvent({
-          delay: 1000,
-          callback: () => {
-            this.countdown--;
-            this.timerText.setText(`Czas: ${this.countdown}`);
-            if (this.countdown <= 0) {
-              this.sound.play('endSound');
-              this.scene.start('EndScene');
+        const config = {
+            type: Phaser.AUTO,
+            width: 600,
+            height: 400,
+            scene: {
+                preload: preload,
+                create: create,
+                update: update
+            },
+            audio: {
+                disableWebAudio: false
             }
-          },
-          callbackScope: this,
-          loop: true
-        });
-      }
-    }
+        };
 
-    class EndScene extends Phaser.Scene {
-      constructor() {
-        super({ key: 'EndScene' });
-      }
+        const game = new Phaser.Game(config);
 
-      preload() {
-        this.load.image('tlo', 'grafika.jpg');
-      }
-
-      create() {
-        this.add.image(400, 300, 'tlo').setDisplaySize(800, 600);
-
-        // Animacja konfetti
-        for (let i = 0; i < 150; i++) {
-          const x = Phaser.Math.Between(0, 800);
-          const y = Phaser.Math.Between(0, 600);
-          const size = Phaser.Math.Between(2, 6);
-          const graphics = this.add.graphics();
-          graphics.fillStyle(Phaser.Display.Color.RandomRGB().color, 1);
-          graphics.fillCircle(x, y, size);
+        function preload() {
+            this.load.image('grafika', 'grafika.jpg');
+            this.load.audio('dzwiek1', 'nagranie1.mp3');
+            this.load.audio('dzwiek2', 'nagranie2.mp3');
         }
 
-        const restartButton = this.add.text(400, 300, 'Zagraj jeszcze raz', { fontSize: '32px', fill: '#fff' })
-          .setOrigin(0.5)
-          .setInteractive();
+        function create() {
+            grafika = this.add.image(300, 200, 'grafika').setDisplaySize(600, 400);
+            dzwiek1 = this.sound.add('dzwiek1');
+            dzwiek2 = this.sound.add('dzwiek2');
 
-        restartButton.on('pointerdown', () => {
-          this.scene.start('MenuScene');
-        });
-      }
-    }
+            tekstStart = this.add.text(100, 180, "Kliknij, by zacząć", { fontSize: '32px', fill: '#000' });
 
-    const config = {
-      type: Phaser.AUTO,
-      width: 800,
-      height: 600,
-      backgroundColor: '#000000',
-      scene: [MenuScene, GameScene, EndScene]
-    };
+            tekstCzasu = this.add.text(500, 10, `Czas: ${czasPozostaly}s`, { fontSize: '24px', fill: '#000' });
 
-    const game = new Phaser.Game(config);
-  </script>
+            this.input.once('pointerdown', () => {
+                tekstStart.setVisible(false);
+                startGame.call(this);
+            });
+        }
+
+        function startGame() {
+            czasPozostaly = 60;  // Resetujemy czas na początek gry
+            czasInterwal = this.time.addEvent({
+                delay: 1000, // co 1 sekundę
+                callback: updateCzas,
+                callbackScope: this,
+                loop: true
+            });
+
+            const powt = Phaser.Math.Between(1, 5);
+            const odtworz = (n) => {
+                if (n > 0) {
+                    dzwiek1.play();
+                    dzwiek1.once('complete', () => odtworz(n - 1));
+                } else {
+                    dzwiek2.play();
+                    dzwiek2.once('complete', () => pokazKonfetti.call(this));
+                }
+            };
+            odtworz(powt);
+        }
+
+        function updateCzas() {
+            if (czasPozostaly > 0) {
+                czasPozostaly--;
+                tekstCzasu.setText(`Czas: ${czasPozostaly}s`);
+            } else {
+                czasInterwal.remove(); // Usuwamy interwał, gdy czas się skończy
+                tekstCzasu.setText("Czas minął!");
+                pokazKonfetti(); // Możesz dodać efekt konfetti, gdy czas się skończy
+            }
+        }
+
+        function pokazKonfetti() {
+            for (let i = 0; i < 100; i++) {
+                konfetti.push({ x: Phaser.Math.Between(0, 600), y: Phaser.Math.Between(0, 400), r: Phaser.Math.Between(3, 7), kolor: Phaser.Display.Color.RandomRGB() });
+            }
+            tekstRestart = this.add.text(100, 180, "Kliknij, by zagrać jeszcze raz", { fontSize: '28px', fill: '#ff0000' });
+            this.input.once('pointerdown', () => location.reload());
+        }
+
+        function update() {
+            const g = game.scene.scenes[0];
+            if (konfetti.length > 0) {
+                konfetti.forEach(k => {
+                    const kolo = g.add.circle(k.x, k.y, k.r, k.kolor.color);
+                    setTimeout(() => kolo.destroy(), 1000);
+                });
+                konfetti = [];
+            }
+        }
+    </script>
 </body>
 </html>
