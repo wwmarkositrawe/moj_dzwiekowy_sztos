@@ -1,15 +1,101 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-    <meta charset="UTF-8">
-    <title>Mój Dźwiękowy Sztos</title>
-    <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.0/dist/phaser.js"></script>
-    <style>
-        body { margin: 0; overflow: hidden; }
-        canvas { display: block; margin: 0 auto; }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Gra z menu i konfetti</title>
+  <style>
+    body { margin: 0; background: #000; overflow: hidden; }
+    canvas { display: block; margin: 0 auto; }
+  </style>
 </head>
 <body>
-<script src="game.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/phaser@3.55.0/dist/phaser.js"></script>
+  <script>
+    class MenuScene extends Phaser.Scene {
+      constructor() {
+        super({ key: 'MenuScene' });
+      }
+
+      preload() {
+        this.load.audio('startSound', 'nagranie1.mp3');
+      }
+
+      create() {
+        const startButton = this.add.text(400, 300, 'Start', { fontSize: '32px', fill: '#fff' })
+          .setOrigin(0.5)
+          .setInteractive();
+
+        startButton.on('pointerdown', () => {
+          this.sound.play('startSound');
+          this.scene.start('GameScene');
+        });
+      }
+    }
+
+    class GameScene extends Phaser.Scene {
+      constructor() {
+        super({ key: 'GameScene' });
+      }
+
+      preload() {
+        this.load.audio('endSound', 'nagranie2.mp3');
+      }
+
+      create() {
+        this.countdown = 10;
+        this.timerText = this.add.text(400, 50, `Czas: ${this.countdown}`, { fontSize: '32px', fill: '#fff' }).setOrigin(0.5);
+
+        this.timeEvent = this.time.addEvent({
+          delay: 1000,
+          callback: () => {
+            this.countdown--;
+            this.timerText.setText(`Czas: ${this.countdown}`);
+            if (this.countdown <= 0) {
+              this.sound.play('endSound');
+              this.scene.start('EndScene');
+            }
+          },
+          callbackScope: this,
+          loop: true
+        });
+      }
+    }
+
+    class EndScene extends Phaser.Scene {
+      constructor() {
+        super({ key: 'EndScene' });
+      }
+
+      create() {
+        // Animacja konfetti
+        for (let i = 0; i < 150; i++) {
+          const x = Phaser.Math.Between(0, 800);
+          const y = Phaser.Math.Between(0, 600);
+          const size = Phaser.Math.Between(2, 6);
+          const graphics = this.add.graphics();
+          graphics.fillStyle(Phaser.Display.Color.RandomRGB().color, 1);
+          graphics.fillCircle(x, y, size);
+        }
+
+        const restartButton = this.add.text(400, 300, 'Zagraj jeszcze raz', { fontSize: '32px', fill: '#fff' })
+          .setOrigin(0.5)
+          .setInteractive();
+
+        restartButton.on('pointerdown', () => {
+          this.scene.start('MenuScene');
+        });
+      }
+    }
+
+    const config = {
+      type: Phaser.AUTO,
+      width: 800,
+      height: 600,
+      backgroundColor: '#000000',
+      scene: [MenuScene, GameScene, EndScene]
+    };
+
+    const game = new Phaser.Game(config);
+  </script>
 </body>
 </html>
